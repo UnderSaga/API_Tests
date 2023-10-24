@@ -2,6 +2,8 @@ package steps;
 
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
+import models.RequestModels.UserRequest;
+import models.ResponseModels.*;
 
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.lessThan;
@@ -9,42 +11,27 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 public class API_Steps {
     @Step("Получение списка пользователей")
-    public void getUserList(String baseURL){
-        given()
+    public UsersListResponse getUserList(String baseURL){
+        return given()
                 .baseUri(baseURL)
                 .when()
                 .get("/api/users?page=2")
                 .then()
                 .contentType(ContentType.JSON)
                 .statusCode(200)
-                .body("data[0].id", equalTo(7))
-                .body("data[0].first_name", equalTo("Michael"))
-                .body("data[0].last_name", equalTo("Lawson"))
-                .body("data[0].avatar", equalTo("https://reqres.in/img/faces/7-image.jpg"));
+                .extract().body().as(UsersListResponse.class);
     }
 
     @Step("Получение одного польвателя")
-    public void getSingleUser(String baseURL, int id){
-        given()
+    public SingleUserResponse getSingleUser(String baseURL, int id, Integer statusCode){
+        return given()
                 .baseUri(baseURL)
                 .when()
                 .get("/api/users/" + id)
                 .then()
                 .contentType(ContentType.JSON)
-                .statusCode(200)
-                .body("data.first_name", equalTo("Janet"))
-                .body("data.last_name", equalTo("Weaver"))
-                .body("data.avatar", equalTo("https://reqres.in/img/faces/2-image.jpg"));
-    }
-
-    @Step("Пользователь не найден")
-    public void singleUserNotFound(String baseURL, int id){
-        given()
-                .baseUri(baseURL)
-                .when()
-                .get("/api/users/" + id)
-                .then()
-                .statusCode(404);
+                .statusCode(statusCode)
+                .extract().body().as(SingleUserResponse.class);
     }
 
     @Step("Получение списка пользователей, но по другому")
@@ -56,96 +43,71 @@ public class API_Steps {
                 .then()
                 .contentType(ContentType.JSON)
                 .statusCode(200)
-                .body("data[0].id", equalTo(1))
-                .body("data[0].first_name", equalTo("George"))
-                .body("data[0].last_name", equalTo("Bluth"))
-                .body("data[0].avatar", equalTo("https://reqres.in/img/faces/1-image.jpg"))
-                .time(lessThan(4000L));
+                .extract().body().as(UsersListResponse.class);
     }
 
     @Step("Получение списка ресурсов")
-    public void getResourceList(String baseURL){
-        given()
+    public ResourceListResponse getResourceList(String baseURL){
+        return given()
                 .baseUri(baseURL)
                 .when()
                 .get("/api/unknown")
                 .then()
                 .statusCode(200)
-                .body("data[0].id", equalTo(1))
-                .body("data[0].name", equalTo("cerulean"))
-                .body("data[0].year", equalTo(2000))
-                .body("data[0].color", equalTo("#98B2D1"))
-                .body("data[0].pantone_value", equalTo("15-4020"));
+                .extract().body().as(ResourceListResponse.class);
     }
 
     @Step("Получение одного ресурса")
-    public void getSingleResource(String baseURL, int id){
-        given()
-                .baseUri(baseURL)
-                .when()
-                .get("/api/unknown" + id)
-                .then()
-                .statusCode(200)
-                .body("data[0].id", equalTo(1))
-                .body("data[0].name", equalTo("cerulean"))
-                .body("data[0].year", equalTo(2000))
-                .body("data[0].color", equalTo("#98B2D1"))
-                .body("data[0].pantone_value", equalTo("15-4020"));
-    }
-
-    @Step("Ресурс не найден")
-    public void singleResourceNotFound(String baseURL, int id){
-        given()
+    public SingleResourceResponse getSingleResource(String baseURL, int id, Integer statusCode){
+        return given()
                 .baseUri(baseURL)
                 .when()
                 .get("/api/unknown/" + id)
                 .then()
-                .statusCode(404);
+                .statusCode(statusCode)
+                .extract().body().as(SingleResourceResponse.class);
     }
 
     @Step("Создание пользователя")
-    public void createUser(String baseURL, String createUserJSON){
-        given()
+    public AccountResponse createUser(String baseURL, UserRequest body){
+        return given()
                 .baseUri(baseURL)
                 .contentType("application/json")
-                .body(createUserJSON)
+                .body(body)
                 .when()
                 .post("/api/users")
                 .then()
                 .statusCode(201)
                 .contentType("application/json")
-                .body("name", equalTo("morpheus"))
-                .body("job", equalTo("leader"));
+                .extract().body().as(AccountResponse.class);
     }
 
     @Step("Обновление пользователя (update)")
-    public void updateUser(String baseURL, String updateUserJSON, int id){
-        given()
+    public AccountResponse updateUser(String baseURL, UserRequest body, int id){
+        return given()
                 .baseUri(baseURL)
                 .contentType("application/json")
-                .body(updateUserJSON)
+                .body(body)
                 .when()
                 .put("/api/users/" + id)
                 .then()
                 .statusCode(200)
                 .contentType("application/json")
-                .body("name", equalTo("morpheus"))
-                .body("job", equalTo("zion resident"));
+                .extract().body().as(AccountResponse.class);
     }
 
     @Step("Обновление пользователя (patch)")
-    public void patchUser(String baseURL, String updateUserJSON, int id){
-        given()
+    public AccountResponse patchUser(String baseURL, UserRequest body, int id){
+        return given()
                 .baseUri(baseURL)
                 .contentType("application/json")
-                .body(updateUserJSON)
+                .body(body)
                 .when()
                 .patch("/api/users/" + id)
                 .then()
                 .statusCode(200)
                 .contentType("application/json")
-                .body("name", equalTo("morpheus"))
-                .body("job", equalTo("zion resident"));
+                .extract().body().as(AccountResponse.class);
     }
 
     @Step("Удаление пользователя")
