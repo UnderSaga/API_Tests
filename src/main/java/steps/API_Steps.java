@@ -2,11 +2,11 @@ package steps;
 
 import io.qameta.allure.Step;
 import io.restassured.http.ContentType;
+import models.RequestModels.AuthRegRequest;
 import models.RequestModels.UserRequest;
 import models.ResponseModels.*;
 
 import static io.restassured.RestAssured.given;
-import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 public class API_Steps {
@@ -35,8 +35,8 @@ public class API_Steps {
     }
 
     @Step("Получение списка пользователей, но по другому")
-    public void getDelayedResponse(String baseURL){
-        given()
+    public UsersListResponse getDelayedResponse(String baseURL){
+        return given()
                 .baseUri(baseURL)
                 .when()
                 .get("/api/users?delay=3")
@@ -78,7 +78,7 @@ public class API_Steps {
                 .post("/api/users")
                 .then()
                 .statusCode(201)
-                .contentType("application/json")
+                .contentType(ContentType.JSON)
                 .extract().body().as(AccountResponse.class);
     }
 
@@ -92,7 +92,7 @@ public class API_Steps {
                 .put("/api/users/" + id)
                 .then()
                 .statusCode(200)
-                .contentType("application/json")
+                .contentType(ContentType.JSON)
                 .extract().body().as(AccountResponse.class);
     }
 
@@ -106,7 +106,7 @@ public class API_Steps {
                 .patch("/api/users/" + id)
                 .then()
                 .statusCode(200)
-                .contentType("application/json")
+                .contentType(ContentType.JSON)
                 .extract().body().as(AccountResponse.class);
     }
 
@@ -121,58 +121,30 @@ public class API_Steps {
     }
 
     @Step("Регистрация пользователя")
-    public void registrationSuccessful(String baseURL, String registrationSuccessfulJson){
-        given()
+    public AuthRegResponse registrationSuccessful(String baseURL, AuthRegRequest authRegRequest, Integer statusCode){
+        return given()
                 .baseUri(baseURL)
                 .contentType("application/json")
-                .body(registrationSuccessfulJson)
+                .body(authRegRequest)
                 .when()
                 .post("/api/register")
                 .then()
-                .statusCode(200)
+                .statusCode(statusCode)
                 .contentType("application/json")
-                .body("token", equalTo("QpwL5tke4Pnpja7X4"));
-    }
-
-    @Step("Регистрация пользователя (провал)")
-    public void registrationUnsuccessful(String baseURL, String registrationUnsuccessfulJson){
-        given()
-                .baseUri(baseURL)
-                .contentType("application/json")
-                .body(registrationUnsuccessfulJson)
-                .when()
-                .post("/api/register")
-                .then()
-                .statusCode(400)
-                .contentType("application/json")
-                .body("error", equalTo("Missing password"));
+                .extract().body().as(AuthRegResponse.class);
     }
 
     @Step("Авторизация пользователя")
-    public void authorizationSuccessful(String baseURL, String authorizationSuccessfulJson){
-        given()
+    public AuthRegResponse authorizationSuccessful(String baseURL, AuthRegRequest authRegRequest, Integer statusCode){
+        return given()
                 .baseUri(baseURL)
                 .contentType("application/json")
-                .body(authorizationSuccessfulJson)
+                .body(authRegRequest)
                 .when()
                 .post("/api/login")
                 .then()
-                .statusCode(200)
+                .statusCode(statusCode)
                 .contentType("application/json")
-                .body("token", equalTo("QpwL5tke4Pnpja7X4"));
-    }
-
-    @Step("Авторизация пользователя")
-    public void authorizationUnsuccessful(String baseURL, String authorizationUnsuccessfulJson){
-        given()
-                .baseUri(baseURL)
-                .contentType("application/json")
-                .body(authorizationUnsuccessfulJson)
-                .when()
-                .post("/api/register")
-                .then()
-                .statusCode(400)
-                .contentType("application/json")
-                .body("error", equalTo("Missing password"));
+                .extract().body().as(AuthRegResponse.class);
     }
 }

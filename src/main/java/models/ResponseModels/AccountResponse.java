@@ -13,6 +13,6 @@ public class AccountResponse {
     public String name;
     public String job;
     public String id;
-    public Date createdAt;
-    public Date updatedAt;
+    public String createdAt;
+    public String updatedAt;
 }
